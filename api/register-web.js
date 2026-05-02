@@ -13,7 +13,6 @@ const BodySchema = z.object({
   discord_id: z.string().min(10).max(32),
   username: z.string().min(3).max(20),
   password: z.string().min(6).max(100),
-  hwid: z.string().max(256).optional().nullable(),
 });
 
 function json(res, code, obj) {
@@ -57,7 +56,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const { discord_id, username, password, hwid } = parsed.data;
+  const { discord_id, username, password } = parsed.data;
 
   try {
     // 1. Verificar se Discord ID existe e pode criar conta
@@ -118,14 +117,13 @@ export default async function handler(req, res) {
     // 3. Hash da senha
     const password_hash = await bcrypt.hash(password, 10);
 
-    // 4. Atualizar usuário no banco
+    // 4. Atualizar usuário no banco (SEM HWID - só para web)
     const { data: updatedUser, error: updateError } = await supabase
       .from('licenses')
       .update({
         has_web_account: true,
         username: username,
         password_hash: password_hash,
-        hwid: hwid || null,
         web_account_created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
