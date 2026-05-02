@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Xereca Auth • Dashboard</title>
+  <style>
+    :root{
+      --bg:#07060a;
+      --panel:#0e0b14;
+      --panel2:#0b0810;
+      --stroke:rgba(255,255,255,.08);
+      --text:#f7f4ff;
+      --muted:rgba(255,255,255,.65);
+      --pink:#ff2da6;
+      --pink2:#ff4fc0;
+      --ok:#2ef1a1;
+      --warn:#ffb020;
+      --bad:#ff4b5c;
+      --shadow:0 18px 60px rgba(0,0,0,.55);
+      --radius:18px;
+      --radius2:14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:
+        radial-gradient(900px 500px at 20% 10%, rgba(255,45,166,.18), transparent 60%),
+        radial-gradient(900px 520px at 90% 20%, rgba(255,79,192,.12), transparent 55%),
+        radial-gradient(600px 420px at 50% 95%, rgba(255,45,166,.10), transparent 60%),
+        linear-gradient(180deg, #05040a, #07060a 45%, #05040a);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:28px 18px 60px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      user-select:none;
+    }
+    .logo{
+      width:42px; height:42px;
+      border-radius:14px;
+      background:
+        radial-gradient(10px 10px at 30% 30%, rgba(255,255,255,.35), transparent 60%),
+        radial-gradient(18px 18px at 70% 30%, rgba(255,255,255,.20), transparent 60%),
+        linear-gradient(145deg, rgba(255,45,166,.95), rgba(255,79,192,.55));
+      box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset, 0 18px 45px rgba(255,45,166,.22);
+      position:relative;
+    }
+    .logo:after{
+      content:"";
+      position:absolute; inset:10px;
+      border-radius:12px;
+      background:linear-gradient(145deg, rgba(0,0,0,.55), rgba(0,0,0,.2));
+      box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset;
+    }
+    .brand h1{
+      font-size:16px;
+      margin:0;
+      letter-spacing:.2px;
+      line-height:1.1;
+    }
+    .brand p{
+      margin:2px 0 0;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border:1px solid var(--stroke);
+      border-radius:999px;
+      background:rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+    }
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:var(--warn);
+      box-shadow:0 0 0 4px rgba(255,176,32,.12);
+    }
+    .dot.ok{background:var(--ok); box-shadow:0 0 0 4px rgba(46,241,161,.12)}
+    .dot.bad{background:var(--bad); box-shadow:0 0 0 4px rgba(255,75,92,.12)}
+    .pill span{font-size:12px;color:var(--muted)}
+    .btn{
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.25);
+      color:var(--text);
+      border-radius:14px;
+      padding:10px 12px;
+      cursor:pointer;
+      transition:.15s ease;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn:hover{transform:translateY(-1px); border-color:rgba(255,255,255,.14)}
+    .btn:active{transform:translateY(0px)}
+    .btn.primary{
+      border-color:rgba(255,45,166,.5);
+      background:linear-gradient(145deg, rgba(255,45,166,.9), rgba(255,79,192,.55));
+      box-shadow:0 18px 40px rgba(255,45,166,.20);
+    }
+    .btn.primary:hover{filter:brightness(1.05)}
+    .btn.danger{
+      border-color:rgba(255,75,92,.45);
+      background:linear-gradient(145deg, rgba(255,75,92,.45), rgba(0,0,0,.25));
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:16px;
+      margin-top:16px;
+    }
+    @media (max-width:980px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:16px 16px 12px;
+      border-bottom:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,0));
+    }
+    .card .hd h2{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.2px;
+    }
+    .card .hd p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .card .bd{padding:16px}
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin:0 0 6px;
+    }
+    .field{
+      display:flex; gap:10px; align-items:center;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.25);
+      border-radius:14px;
+      padding:10px 12px;
+      transition:.15s ease;
+    }
+    .field:focus-within{border-color:rgba(255,45,166,.45); box-shadow:0 0 0 4px rgba(255,45,166,.12)}
+    input, select{
+      width:100%;
+      border:0;
+      outline:0;
+      background:transparent;
+      color:var(--text);
+      font-size:13px;
+    }
+    input::placeholder{color:rgba(255,255,255,.35)}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width:520px){.row{grid-template-columns:1fr}}
+    .sep{height:12px}
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:8px;
+      line-height:1.35;
+    }
+    .mono{font-family:var(--mono)}
+    .tag{
+      font-size:11px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      color:var(--muted);
+      background:rgba(0,0,0,.25);
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .tag strong{color:var(--text); font-weight:600}
+    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .tableWrap{
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      overflow:hidden;
+      background:rgba(0,0,0,.20);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+    thead th{
+      text-align:left;
+      font-size:11px;
+      color:rgba(255,255,255,.70);
+      font-weight:600;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      padding:12px 14px;
+      border-bottom:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+    }
+    tbody td{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      vertical-align:middle;
+    }
+    tbody tr:hover{background:rgba(255,45,166,.06)}
+    .status{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px; color:var(--muted);
+    }
+    .s-dot{
+      width:8px; height:8px; border-radius:999px;
+      background:var(--warn);
+      box-shadow:0 0 0 4px rgba(255,176,32,.10);
+    }
+    .s-dot.active{background:var(--ok); box-shadow:0 0 0 4px rgba(46,241,161,.10)}
+    .s-dot.revoked{background:var(--bad); box-shadow:0 0 0 4px rgba(255,75,92,.10)}
+    .k{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:12px;
+      border:1px dashed rgba(255,255,255,.14);
+      background:rgba(0,0,0,.25);
+      display:inline-flex;
+      max-width:420px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .toolbar{
+      display:flex; align-items:center; gap:10px;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .toolbar .left{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .toast{
+      position:fixed;
+      right:16px; bottom:16px;
+      background:rgba(12,10,18,.9);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:12px 14px;
+      box-shadow:var(--shadow);
+      display:none;
+      min-width:260px;
+      backdrop-filter: blur(10px);
+    }
+    .toast.show{display:block; animation:pop .18s ease}
+    @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .toast .t{font-size:12px;color:var(--muted)}
+    .toast .m{margin-top:4px;font-size:13px}
+    .footerNote{
+      margin-top:14px;
+      font-size:12px;
+      color:rgba(255,255,255,.45);
+    }
+    .hidden{display:none !important}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Xereca Auth</h1>
+          <p>Dashboard • keys • sessões • logs</p>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div class="pill" title="Status da API">
+          <div id="apiDot" class="dot"></div>
+          <span id="apiStatus">API: desconectada</span>
+        </div>
+        <button id="btnLogout" class="btn hidden" type="button">Sair</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: Auth -->
+      <section class="card" id="cardAuth">
+        <div class="hd">
+          <h2>Autenticação</h2>
+          <p>Entre com sua conta admin para listar/criar/revogar keys.</p>
+        </div>
+        <div class="bd">
+          <div class="sep"></div>
+
+          <div class="row">
+            <div>
+              <label for="email">Email</label>
+              <div class="field">
+                <input id="email" type="email" placeholder="admin@xereca.gg" autocomplete="username">
+              </div>
+            </div>
+            <div>
+              <label for="password">Senha</label>
+              <div class="field">
+                <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+              </div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <label for="baseUrl">Base URL da API (opcional)</label>
+          <div class="field">
+            <input id="baseUrl" type="text" placeholder="https://sua-api.com (ou deixa vazio pra usar mock)">
+          </div>
+
+          <div class="actions">
+            <button id="btnLogin" class="btn primary" type="button">Entrar</button>
+            <button id="btnPing" class="btn" type="button">Testar API</button>
+          </div>
+
+          <div class="hint">
+            Token atual: <span id="tokenPreview" class="mono">—</span>
+          </div>
+
+          <div class="footerNote">
+            Dica: se for usar Supabase/Node, troque as funções <span class="mono">api.*</span> pelos seus endpoints.
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Dashboard -->
+      <section class="card hidden" id="cardDash">
+        <div class="hd">
+          <h2>Keys</h2>
+          <p>Gerencie suas licenças: buscar, copiar, criar e revogar.</p>
+        </div>
+
+        <div class="bd">
+          <div class="toolbar">
+            <div class="left">
+              <div class="field" style="min-width:260px">
+                <input id="search" type="text" placeholder="Buscar por key, user, note, status...">
+              </div>
+
+              <div class="tag">
+                <span>Conta:</span> <strong id="whoami">—</strong>
+              </div>
+
+              <div class="tag">
+                <span>Total:</span> <strong id="countKeys">0</strong>
+              </div>
+            </div>
+
+            <div class="right" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <button id="btnRefresh" class="btn" type="button">Atualizar</button>
+              <button id="btnOpenCreate" class="btn primary" type="button">Criar Key</button>
+            </div>
+          </div>
+
+          <div class="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:44%">Key</th>
+                  <th style="width:14%">Status</th>
+                  <th style="width:16%">Expira</th>
+                  <th style="width:14%">Plano</th>
+                  <th style="width:12%">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyKeys">
+                <!-- rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="card" style="background:rgba(0,0,0,.18); box-shadow:none;">
+            <div class="hd">
+              <h2>Logs rápidos</h2>
+              <p>Eventos locais do painel (mock). No seu back, você pode salvar isso no banco.</p>
+            </div>
+            <div class="bd">
+              <div id="logs" class="mono" style="font-size:12px; color:rgba(255,255,255,.70); line-height:1.55; max-height:160px; overflow:auto;"></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Create Modal (simple) -->
+  <div id="createModal" class="hidden" style="
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.65); backdrop-filter: blur(6px); padding:18px;">
+    <div class="card" style="max-width:640px; width:100%;">
+      <div class="hd" style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+        <div>
+          <h2>Criar nova key</h2>
+          <p>Defina plano, duração, nota e limite (opcional).</p>
+        </div>
+        <button id="btnCloseCreate" class="btn" type="button">Fechar</button>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <div>
+            <label for="plan">Plano</label>
+            <div class="field">
+              <select id="plan">
+                <option value="basic">basic</option>
+                <option value="pro">pro</option>
+                <option value="lifetime">lifetime</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="days">Validade (dias)</label>
+            <div class="field">
+              <input id="days" type="number" min="1" placeholder="30">
+            </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <div>
+            <label for="limit">Limite de uso (opcional)</label>
+            <div class="field">
+              <input id="limit" type="number" min="1" placeholder="Ex: 1 (single), 3, 10">
+            </div>
+          </div>
+          <div>
+            <label for="note">Nota (opcional)</label>
+            <div class="field">
+              <input id="note" type="text" placeholder="Ex: cliente DC #1234 / promoção / etc">
+            </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="actions">
+          <button id="btnCreateKey" class="btn primary" type="button">Gerar Key</button>
+          <button id="btnCreateDemo" class="btn" type="button">Preencher exemplo</button>
+        </div>
+
+        <div class="hint">
+          Key gerada aparece na lista. No back, você salva em banco e devolve o objeto.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <div class="t" id="toastTitle">Status</div>
+    <div class="m" id="toastMsg">...</div>
+  </div>
+
+<script>
+/**
+ * XERECA AUTH DASHBOARD (front-only)
+ * - Vem com API mock (funciona offline)
+ * - Para usar com back real: troque api.* por fetch() pro seu endpoint
+ */
+
+const $ = (q) => document.querySelector(q);
+
+const state = {
+  token: null,
+  user: null,
+  baseUrl: "",
+  keys: [],
+  apiOk: false,
+};
+
+function nowISO(){ return new Date().toISOString(); }
+function fmtDate(iso){
+  if(!iso) return "—";
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yy = d.getFullYear();
+  return `${dd}/${mm}/${yy}`;
+}
+
+function toast(title, msg){
+  $("#toastTitle").textContent = title;
+  $("#toastMsg").textContent = msg;
+  $("#toast").classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=> $("#toast").classList.remove("show"), 2600);
+}
+
+function log(line){
+  const box = $("#logs");
+  const time = new Date().toLocaleTimeString("pt-BR");
+  box.innerHTML = `[${time}] ${escapeHtml(line)}<br>` + box.innerHTML;
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function setApiStatus(ok){
+  state.apiOk = ok;
+  const dot = $("#apiDot");
+  dot.classList.remove("ok","bad");
+  if(ok){
+    dot.classList.add("ok");
+    $("#apiStatus").textContent = "API: online";
+  }else{
+    dot.classList.add("bad");
+    $("#apiStatus").textContent = "API: offline";
+  }
+}
+
+/** ---------------------------
+ * MOCK API (offline demo)
+ * Troque por fetch() quando tiver backend
+ * -------------------------- */
+const mockDb = {
+  users: [{ email:"admin@xereca.gg", password:"123456", name:"Xereca Admin" }],
+  keys: [
+    { id:"k1", key:"XRC-9Q2K-4P1A-7M8Z", status:"active", plan:"pro", expiresAt:addDays(30), note:"cliente dc #1020", limit:1, createdAt:addDays(-2) },
+    { id:"k2", key:"XRC-1A1B-2C2D-3E3F", status:"active", plan:"basic", expiresAt:addDays(7), note:"teste", limit:3, createdAt:addDays(-1) },
+    { id:"k3", key:"XRC-LIFE-0000-9999-ABCD", status:"revoked", plan:"lifetime", expiresAt:null, note:"chargeback", limit:null, createdAt:addDays(-20) }
+  ]
+};
+
+function addDays(n){
+  const d = new Date();
+  d.setDate(d.getDate()+n);
+  return d.toISOString();
+}
+function genKey(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const seg = (len)=> Array.from({length:len}, ()=> chars[Math.floor(Math.random()*chars.length)]).join("");
+  return `XRC-${seg(4)}-${seg(4)}-${seg(4)}`;
+}
+
+const api = {
+  async ping(baseUrl){
+    // se baseUrl informado, você faria fetch(`${baseUrl}/ping`)
+    await sleep(250);
+    return { ok:true, ts: nowISO(), mode: baseUrl ? "remote" : "mock" };
+  },
+  async login({email,password, baseUrl}){
+    await sleep(320);
+    const u = mockDb.users.find(x=>x.email===email && x.password===password);
+    if(!u) throw new Error("Email ou senha inválidos.");
+    return { token: "mock_token_"+Math.random().toString(16).slice(2), user:{ email:u.email, name:u.name } };
+  },
+  async listKeys({token, baseUrl}){
+    await sleep(250);
+    if(!token) throw new Error("Sem token.");
+    // no real: fetch(`${baseUrl}/keys`, {headers:{Authorization:`Bearer ${token}`}})
+    return mockDb.keys.slice().sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
+  },
+  async createKey({token, plan, days, note, limit, baseUrl}){
+    await sleep(300);
+    if(!token) throw new Error("Sem token.");
+    const k = {
+      id: "k_"+Math.random().toString(16).slice(2),
+      key: genKey(),
+      status: "active",
+      plan,
+      expiresAt: plan === "lifetime" ? null : addDays(Number(days || 30)),
+      note: note || "",
+      limit: limit ? Number(limit) : null,
+      createdAt: nowISO(),
+    };
+    mockDb.keys.unshift(k);
+    return k;
+  },
+  async revokeKey({token, id, baseUrl}){
+    await sleep(220);
+    if(!token) throw new Error("Sem token.");
+    const k = mockDb.keys.find(x=>x.id===id);
+    if(!k) throw new Error("Key não encontrada.");
+    k.status = "revoked";
+    return k;
+  }
+};
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/** ---------------------------
+ * UI logic
+ * -------------------------- */
+function showDash(show){
+  $("#cardDash").classList.toggle("hidden", !show);
+  $("#btnLogout").classList.toggle("hidden", !show);
+  // auth card continua visível (pra ficar clean), mas você pode esconder se quiser:
+  // $("#cardAuth").classList.toggle("hidden", show);
+}
+
+function renderKeys(){
+  const q = ($("#search").value || "").toLowerCase().trim();
+  const list = state.keys.filter(k=>{
+    if(!q) return true;
+    return [
+      k.key, k.status, k.plan, k.note, k.id,
+      (k.expiresAt ? fmtDate(k.expiresAt) : "lifetime")
+    ].join(" ").toLowerCase().includes(q);
+  });
+
+  $("#countKeys").textContent = String(list.length);
+
+  const tbody = $("#tbodyKeys");
+  tbody.innerHTML = "";
+
+  for(const k of list){
+    const tr = document.createElement("tr");
+
+    const tdKey = document.createElement("td");
+    tdKey.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div class="k" title="${escapeHtml(k.key)}">${escapeHtml(k.key)}</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          ${k.note ? `<span class="tag"><span style="opacity:.8">note:</span> <strong>${escapeHtml(k.note)}</strong></span>` : `<span class="tag"><span>note:</span> <strong>—</strong></span>`}
+          ${k.limit ? `<span class="tag"><span>limit:</span> <strong>${k.limit}</strong></span>` : `<span class="tag"><span>limit:</span> <strong>∞</strong></span>`}
+        </div>
+      </div>
+    `;
+
+    const tdStatus = document.createElement("td");
+    tdStatus.innerHTML = `
+      <span class="status">
+        <span class="s-dot ${k.status === "active" ? "active" : "revoked"}"></span>
+        ${escapeHtml(k.status)}
+      </span>
+    `;
+
+    const tdExp = document.createElement("td");
+    tdExp.textContent = k.plan === "lifetime" ? "—" : fmtDate(k.expiresAt);
+
+    const tdPlan = document.createElement("td");
+    tdPlan.innerHTML = `<span class="tag"><strong>${escapeHtml(k.plan)}</strong></span>`;
+
+    const tdAct = document.createElement("td");
+    const btnCopy = document.createElement("button");
+    btnCopy.className = "btn";
+    btnCopy.type = "button";
+    btnCopy.textContent = "Copiar";
+    btnCopy.onclick = async ()=>{
+      await navigator.clipboard.writeText(k.key);
+      toast("Copiado", "Key copiada pro clipboard.");
+      log(`Copiou key ${k.id}`);
+    };
+
+    const btnRevoke = document.createElement("button");
+    btnRevoke.className = "btn danger";
+    btnRevoke.type = "button";
+    btnRevoke.textContent = "Revogar";
+    btnRevoke.disabled = (k.status !== "active");
+    btnRevoke.style.opacity = btnRevoke.disabled ? ".55" : "1";
+    btnRevoke.onclick = async ()=>{
+      try{
+        await api.revokeKey({token:state.token, id:k.id, baseUrl:state.baseUrl});
+        toast("Revogada", "Key revogada com sucesso.");
+        log(`Revogou key ${k.id}`);
+        await refreshKeys();
+      }catch(e){
+        toast("Erro", e.message || "Falha ao revogar.");
+      }
+    };
+
+    tdAct.append(btnCopy, document.createTextNode(" "), btnRevoke);
+
+    tr.append(tdKey, tdStatus, tdExp, tdPlan, tdAct);
+    tbody.appendChild(tr);
+  }
+
+  if(!list.length){
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 5;
+    td.style.padding = "18px 14px";
+    td.style.color = "rgba(255,255,255,.6)";
+    td.innerHTML = `Nada por aqui. Tenta limpar a busca ou criar uma key.`;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+}
+
+async function refreshKeys(){
+  const keys = await api.listKeys({token:state.token, baseUrl:state.baseUrl});
+  state.keys = keys;
+  renderKeys();
+}
+
+async function doPing(){
+  try{
+    state.baseUrl = ($("#baseUrl").value || "").trim();
+    const r = await api.ping(state.baseUrl);
+    setApiStatus(true);
+    toast("API OK", `Ping ok (${r.mode}).`);
+    log(`Ping ok (${r.mode})`);
+  }catch(e){
+    setApiStatus(false);
+    toast("API OFF", e.message || "Falha no ping.");
+    log(`Ping falhou`);
+  }
+}
+
+async function doLogin(){
+  const email = ($("#email").value || "").trim();
+  const password = ($("#password").value || "").trim();
+  state.baseUrl = ($("#baseUrl").value || "").trim();
+
+  if(!email || !password){
+    toast("Faltou algo", "Coloca email e senha.");
+    return;
+  }
+
+  try{
+    const r = await api.login({email,password, baseUrl:state.baseUrl});
+    state.token = r.token;
+    state.user = r.user;
+
+    $("#tokenPreview").textContent = state.token;
+    $("#whoami").textContent = `${state.user.name}`;
+    showDash(true);
+
+    toast("Entrou", "Login feito com sucesso.");
+    log(`Login: ${state.user.email}`);
+
+    await refreshKeys();
+    setApiStatus(true);
+  }catch(e){
+    toast("Erro", e.message || "Falha no login.");
+    log(`Login falhou (${email})`);
+    setApiStatus(false);
+  }
+}
+
+function doLogout(){
+  state.token = null;
+  state.user = null;
+  state.keys = [];
+  $("#tokenPreview").textContent = "—";
+  $("#whoami").textContent = "—";
+  $("#countKeys").textContent = "0";
+  $("#tbodyKeys").innerHTML = "";
+  showDash(false);
+  toast("Saiu", "Sessão encerrada.");
+  log("Logout");
+}
+
+function openCreate(open){
+  $("#createModal").classList.toggle("hidden", !open);
+}
+
+async function doCreateKey(){
+  try{
+    const plan = $("#plan").value;
+    const days = $("#days").value || (plan === "lifetime" ? "" : "30");
+    const note = $("#note").value;
+    const limit = $("#limit").value;
+
+    const k = await api.createKey({
+      token: state.token,
+      plan, days, note, limit,
+      baseUrl: state.baseUrl
+    });
+
+    toast("Criada", "Key gerada e salva.");
+    log(`Criou key ${k.id} (${k.plan})`);
+    openCreate(false);
+    $("#days").value = "";
+    $("#note").value = "";
+    $("#limit").value = "";
+    await refreshKeys();
+  }catch(e){
+    toast("Erro", e.message || "Falha ao criar.");
+  }
+}
+
+/** events */
+$("#btnPing").addEventListener("click", doPing);
+$("#btnLogin").addEventListener("click", doLogin);
+$("#btnLogout").addEventListener("click", doLogout);
+$("#btnRefresh").addEventListener("click", async ()=>{ try{ await refreshKeys(); toast("OK","Lista atualizada."); log("Atualizou lista"); }catch(e){ toast("Erro", e.message||"Falha"); }});
+$("#search").addEventListener("input", renderKeys);
+
+$("#btnOpenCreate").addEventListener("click", ()=>openCreate(true));
+$("#btnCloseCreate").addEventListener("click", ()=>openCreate(false));
+$("#createModal").addEventListener("click", (e)=>{ if(e.target === $("#createModal")) openCreate(false); });
+
+$("#btnCreateKey").addEventListener("click", doCreateKey);
+$("#btnCreateDemo").addEventListener("click", ()=>{
+  $("#plan").value = "pro";
+  $("#days").value = "30";
+  $("#limit").value = "1";
+  $("#note").value = "cliente discord #1234";
+  toast("Exemplo", "Campos preenchidos.");
+});
+
+window.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape" && !$("#createModal").classList.contains("hidden")) openCreate(false);
+});
+
+/** init */
+log("Painel iniciado (modo mock).");
+setApiStatus(false);
+</script>
+</body>
+</html>
